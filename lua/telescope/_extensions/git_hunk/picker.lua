@@ -1,20 +1,18 @@
 local M = {}
-M.config = {}
 
-local actions = require('telescope.actions')
-local action_state = require('telescope.actions.state')
+local actions = require 'telescope.actions'
+local action_state = require 'telescope.actions.state'
 local conf = require('telescope.config').values
-local finders = require('telescope.finders')
-local pickers = require('telescope.pickers')
-local utils = require('telescope.utils')
-local putils = require "telescope.previewers.utils"
+local finders = require 'telescope.finders'
+local pickers = require 'telescope.pickers'
+local utils = require 'telescope.utils'
+local putils = require 'telescope.previewers.utils'
 local git_command = utils.__git_command
-local previewers = require('telescope.previewers')
-
+local previewers = require 'telescope.previewers'
 
 M.hunk_diff = previewers.defaulter(function()
   return previewers.new_buffer_previewer {
-    title = "Git Diff Preview",
+    title = 'Git Hunk Diff Preview',
     get_buffer_by_name = function(_, entry)
       return entry.value
     end,
@@ -30,13 +28,13 @@ end, {})
 M.find_hunks = function(opts)
   opts = opts or {}
   if opts.is_bare then
-    utils.notify("git_hunk.find_hunks", {
-      msg = "This operation must be run in a work tree",
-      level = "ERROR",
+    utils.notify('git_hunk.find_hunks', {
+      msg = 'This operation must be run in a work tree',
+      level = 'ERROR',
     })
     return
   end
-  local args = { "diff" }
+  local args = { 'diff' }
   if opts.additional_args then
     vim.list_extend(args, opts.additional_args)
   end
@@ -56,7 +54,7 @@ M.find_hunks = function(opts)
         table.insert(results, { filename = filename, lnum = linenumber, raw_lines = hunk_lines })
       end
 
-      local _, filepath_, _ = line:match('^diff (.*) a/(.*) b/(.*)$')
+      local _, filepath_, _ = line:match '^diff (.*) a/(.*) b/(.*)$'
 
       filename = filepath_
       linenumber = nil
@@ -106,7 +104,7 @@ M.find_hunks = function(opts)
   pickers
     .new({}, {
       prompt_title = 'Git Hunks',
-      finder = finders.new_table({
+      finder = finders.new_table {
         results = results,
         entry_maker = function(entry)
           entry.value = entry.filename
@@ -114,17 +112,17 @@ M.find_hunks = function(opts)
           entry.display = entry.filename .. ':' .. entry.lnum
           return entry
         end,
-      }),
+      },
       previewer = M.hunk_diff.new(opts),
-      sorter = conf.file_sorter({}),
+      sorter = conf.file_sorter {},
       on_complete = {
         function(self)
           local lines = self.manager:num_results()
           local prompt = action_state.get_current_line()
-          if lines == 0 and prompt == "" then
-            utils.notify("git_hunk.find_hunks", {
-              msg = "No changes found",
-              level = "ERROR",
+          if lines == 0 and prompt == '' then
+            utils.notify('git_hunk.find_hunks', {
+              msg = 'No changes found',
+              level = 'ERROR',
             })
             actions.close(self.prompt_bufnr)
           end
